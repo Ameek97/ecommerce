@@ -1,6 +1,6 @@
 import User from "./model/userModel.js";
 import jwt from `jsonwebtoken`;
-
+import brycpt from "bcrypt";
 
 const createToken = (id) =>
   jwt.sign(
@@ -8,6 +8,9 @@ const createToken = (id) =>
     process.env.JWT_KEY,
     { expiresIn: "90d" }
   );
+
+
+
 
 
 
@@ -27,7 +30,7 @@ const register = async (req, res, next) => {
    res.status(200).json({
         status:"success",
         newUser, 
-        token : createToken(newUser._id);
+        token : createToken(newUser._id)
      })
     
    } catch(err){
@@ -39,11 +42,33 @@ const register = async (req, res, next) => {
 };
 
 
+const login =async  (req, res, next)=>{
 
+  const { email, password } = req.body;
+
+  try{
+
+      
+      if(!email || !password){
+         return next(new appErr("enter password and email",400));}
+          
+    // we do select password as in our schema we have our password set to select:false     
+    const user = await  User.findOne({email}).select("+password"); 
+
+    
+   // this can be done without the userschema.method 
+   if(!user || !(await bcrypt.compare(password, user.password))){
+     return next( new appErr("invalid password or email"));
+   }
+
+  }
+
+
+
+}
 
 
 
 module.exports = register;
 
 
-module.exports = protect = (data)=>{}
