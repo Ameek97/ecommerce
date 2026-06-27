@@ -1,10 +1,14 @@
 import mongoose from "mongoose" 
 import validator from "validator"
 
-const DB = process.env.DATABASE.replace('<db_password>', process.env.PASSWORD);
+const DB = process.env.DATABASE.replace('<db_password>', process.env.PASSWORD); 
+
+app.use(()=>{
+    console.log("hello");
+})
 
 mongoose.connect(DB)
-.than(()=>{
+.then(()=>{
     console.log("connection to mongo database succesful");
 }).catch(err => {
         console.error('Connection error:', err.message);
@@ -62,4 +66,5 @@ const userSchema = new mongoose.Schema({
 
 
 const User = mongosse.Model('User', userSchema);
-module.exports = User;    
+
+export default User;

@@ -1,20 +1,24 @@
-import User from "./model/userModel.js";
-import jwt from `jsonwebtoken`;
+import User from "../model/userModel.js";
+import jwt from "jsonwebtoken";
 import brycpt from "bcrypt";
 
-const createToken = (id) =>
-  jwt.sign(
+
+const createToken = (id) =>{
+ 
+  const token = jwt.sign(
     { id },
     process.env.JWT_KEY,
     { expiresIn: "90d" }
   );
 
+  return token;
+}
 
 
 
 
 
-const register = async (req, res, next) => {
+ const register = async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (user) {
@@ -42,7 +46,7 @@ const register = async (req, res, next) => {
 };
 
 
-const login =async  (req, res, next)=>{
+ const login =async  (req, res, next)=>{
 
   const { email, password } = req.body;
 
@@ -61,14 +65,17 @@ const login =async  (req, res, next)=>{
      return next( new appErr("invalid password or email"));
    }
 
+  } catch(err){
+    return next(err);
   }
 
 
 
 }
 
+export default {
+    signup,
+    login  };
 
-
-module.exports = register;
 
 
