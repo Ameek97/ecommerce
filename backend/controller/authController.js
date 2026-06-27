@@ -1,81 +1,63 @@
 import User from "../model/userModel.js";
 import jwt from "jsonwebtoken";
-import brycpt from "bcrypt";
+import bcrypt from "bcrypt";
 
-
-const createToken = (id) =>{
- 
-  const token = jwt.sign(
-    { id },
-    process.env.JWT_KEY,
-    { expiresIn: "90d" }
-  );
+const createToken = (id) => {
+  const token = jwt.sign({ id }, process.env.JWT_KEY, { expiresIn: "90d" });
 
   return token;
-}
-
-
-
-
-
- const register = async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
-
-  if (user) {
-    return res.status(400).json({
-      message: "User already registered",
-    });
-  }
-
-  // Continue registration...
-
-   try{
-   const newUser = await User.create(req.body);
-   res.status(200).json({
-        status:"success",
-        newUser, 
-        token : createToken(newUser._id)
-     })
-    
-   } catch(err){
-     res.status(400).json({
-        status:"fail",
-        err
-     })
-   }
 };
 
+export const signup = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
 
- const login =async  (req, res, next)=>{
+    if (user) {
+      return res.status(400).json({
+        message: "User already registered",
+      });
+    }
 
+    const newUser = await User.create(req.body);
+
+    res.status(201).json({
+      status: "success",
+      newUser,
+      token: createToken(newUser._id),
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      err,
+    });
+  }
+};
+
+export const login = async (req, res, next) => {
   const { email, password } = req.body;
 
-  try{
+  try {
+    if (!email || !password) {
+      return res.status(400).json({
+        status: "fail",
+        message: "enter password and email",
+      });
+    }
 
-      
-      if(!email || !password){
-         return next(new appErr("enter password and email",400));}
-          
-    // we do select password as in our schema we have our password set to select:false     
-    const user = await  User.findOne({email}).select("+password"); 
+    const user = await User.findOne({ email }).select("+password");
 
-    
-   // this can be done without the userschema.method 
-   if(!user || !(await bcrypt.compare(password, user.password))){
-     return next( new appErr("invalid password or email"));
-   }
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({
+        status: "fail",
+        message: "invalid password or email",
+      });
+    }
 
-  } catch(err){
+    res.status(200).json({
+      status: "success",
+      token: createToken(user._id),
+    });
+  } catch (err) {
     return next(err);
   }
-
-
-
-}
-
-export default {
-    signup,
-    login  };
-
-
-
+};
