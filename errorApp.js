@@ -1,4 +1,4 @@
-class errApp  extends Err{
+class errApp  extends Error{
 
 constructor(message, statusCode){
 

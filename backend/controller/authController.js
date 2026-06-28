@@ -1,6 +1,7 @@
 import User from "../model/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import errorApp from "./../../errorApp.js";
 
 const createToken = (id) => {
   const token = jwt.sign({ id }, process.env.JWT_KEY, { expiresIn: "90d" });
@@ -10,14 +11,22 @@ const createToken = (id) => {
 
 export const signup = async (req, res, next) => {
   try {
+
+    
+    
+    const {email,password}= req.body;
+
+ 
+ // 1) check if the email and password were entered 
+   if(!email || !password){
+    console.log("im here");
+   return next(new errorApp("please provide  Email and password",400));}
+
     const user = await User.findOne({ email: req.body.email });
 
-    if (user) {
-      return res.status(400).json({
-        message: "User already registered",
-      });
-    }
+    
 
+    
     const newUser = await User.create(req.body);
 
     res.status(201).json({
@@ -25,13 +34,10 @@ export const signup = async (req, res, next) => {
       newUser,
       token: createToken(newUser._id),
     });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      err,
-    });
+  } catch (err) { return next(err);
+    };
   }
-};
+
 
 export const login = async (req, res, next) => {
   const { email, password } = req.body;
