@@ -9,23 +9,21 @@ const createToken = (id) => {
   return token;
 };
 
+
+
+// signup
 export const signup = async (req, res, next) => {
   try {
 
-    
-    
     const {email,password}= req.body;
 
  
- // 1) check if the email and password were entered 
+
    if(!email || !password){
     console.log("im here");
    return next(new errorApp("please provide  Email and password",400));}
 
     const user = await User.findOne({ email: req.body.email });
-
-    
-
     
     const newUser = await User.create(req.body);
 
@@ -39,6 +37,8 @@ export const signup = async (req, res, next) => {
   }
 
 
+
+// login  
 export const login = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -67,3 +67,45 @@ export const login = async (req, res, next) => {
     return next(err);
   }
 };
+
+
+// protect 
+exports.protect= async (req,res, next)=>{
+
+let token; 
+if(req.headers.authorization  && req.headers.authorization.startsWith("Bearer")){
+  token = req.headers.authorization.split(' ')[1];}
+
+if(!token){return next(new AppError("Request denied you were not logged in",401));}
+
+ const decoded=await promisify(jwt.verify)(token,process.env.JWT_KEY);
+
+ console.log(decoded);
+   const newUser= await User.findById(decoded.id);   
+
+   if(!newUser){return next(new AppError("The user this token belongs to no longer exists.",401));}
+
+
+
+  // model instance function 
+  if(newUser.changedPasswordAfter(decoded.iat)){
+   return next(new AppError("The password was changed after the token was issued, please login again.",401));}
+
+req.user=newUser; 
+next();
+
+}
+
+
+// restrict to 
+const restrictTo= (...roles)=>{
+  return function(req, res, next){
+
+      if(!roles.includes(req.body.role)){
+                  return next( new errorApp("forbidden for you!", 403));
+      } 
+      next();
+  }
+}
+
+
