@@ -2,6 +2,7 @@ import User from "../model/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import errorApp from "./../../errorApp.js";
+import {promisify} from "util";
 
 const createToken = (id) => {
   const token = jwt.sign({ id }, process.env.JWT_KEY, { expiresIn: "90d" });
@@ -70,7 +71,7 @@ export const login = async (req, res, next) => {
 
 
 // protect 
-exports.protect= async (req,res, next)=>{
+const protect= async (req,res, next)=>{
 
 let token; 
 if(req.headers.authorization  && req.headers.authorization.startsWith("Bearer")){
@@ -88,8 +89,8 @@ if(!token){return next(new AppError("Request denied you were not logged in",401)
 
 
   // model instance function 
-  if(newUser.changedPasswordAfter(decoded.iat)){
-   return next(new AppError("The password was changed after the token was issued, please login again.",401));}
+  // if(newUser.changedPasswordAfter(decoded.iat)){
+  //  return next(new AppError("The password was changed after the token was issued, please login again.",401));}
 
 req.user=newUser; 
 next();
@@ -109,3 +110,4 @@ const restrictTo= (...roles)=>{
 }
 
 
+export {restrictTo, protect}; 

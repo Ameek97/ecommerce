@@ -47,19 +47,18 @@ const productSchema = new mongoose.Schema(
     discountPrice: {
       type: Number,
       min: [0, "Discount price cannot be negative"],
-      validate: {
-        validator: function (value) {
-          return value == null || value < this.price;
-        },
-        message: "Discount price should be lower than the product price",
-      },
+      
+      validate:{
+
+        validator:function(el){
+           return discount > this.price },
+
+        message:"discount cannot be greater than price "   
+      }
+
+
     },
 
-    currency: {
-      type: String,
-      default: "USD",
-      trim: true,
-    },
 
     stock: {
       type: Number,
@@ -93,13 +92,6 @@ const productSchema = new mongoose.Schema(
       default: [],
     },
 
-    ratingsAverage: {
-      type: Number,
-      default: 0,
-      min: [0, "Rating cannot be below 0"],
-      max: [5, "Rating cannot be above 5"],
-      set: (value) => Math.round(value * 10) / 10,
-    },
 
     ratingsQuantity: {
       type: Number,
@@ -117,9 +109,6 @@ const productSchema = new mongoose.Schema(
       default: true,
     },
   },
-  {
-    timestamps: true,
-  }
 );
 
 const Product = mongoose.model("Product", productSchema);
