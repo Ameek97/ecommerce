@@ -45,6 +45,7 @@ const userSchema = new mongoose.Schema({
 
   passwordConfirm: {
     type: String,
+    
     validate: {
       validator: function (el) {
         return el === this.password;
